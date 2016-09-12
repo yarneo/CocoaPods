@@ -243,7 +243,7 @@ begin
         Dir.chdir(example.to_s) do
           # TODO: we need to open the workspace in Xcode at least once, otherwise it might not contain schemes.
           # The schemes do not seem to survive a SCM round-trip.
-          sh "open *.xcworkspace"
+          sh 'open *.xcworkspace'
           sleep 5
         end
       end
@@ -281,9 +281,10 @@ begin
             when :ios
               require 'fourflusher'
               # Specifically build against the simulator SDK so we don't have to deal with code signing.
-              test_flag = (scheme_name.start_with? 'Test') ? 'test' : ''
-              destination = Fourflusher::SimControl.new.destination(:oldest, platform, target.deployment_target).join(" ")
-              execute_command "xcodebuild -workspace '#{workspace_path}' -scheme '#{scheme_name}' clean build #{test_flag} ONLY_ACTIVE_ARCH=NO #{destination}"
+              test_flag = scheme_name.start_with?('Test') ? 'test' : ''
+              # DO NOT MERGE
+              # destination = Fourflusher::SimControl.new.destination(:oldest, platform, target.deployment_target).join(' ')
+              execute_command "xcodebuild -workspace '#{workspace_path}' -scheme '#{scheme_name}' clean build #{test_flag} ONLY_ACTIVE_ARCH=NO -destination 'name=iPhone SE'"
             else
               raise "Unknown platform #{platform}"
             end
