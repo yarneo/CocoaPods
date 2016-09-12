@@ -15,6 +15,29 @@ To install release candidates run `[sudo] gem install cocoapods --pre`
 * None.  
 
 
+## 1.1.0.rc.1 (2016-09-10)
+
+##### Enhancements
+
+* Use the SWIFT_VERSION when linting pods.  
+  [Danielle Tomlinson](https://github.com/dantoml)
+  [#5841](https://github.com/CocoaPods/CocoaPods/issues/5841)
+
+##### Bug Fixes
+
+* Correctly pass Pod:VERSION in `pod lib create`.  
+  [Danielle Tomlinson](https://github.com/dantoml)
+  [#5840](https://github.com/CocoaPods/CocoaPods/issues/5840)
+
+* Prevent crash when generating acknowledgements when license type is not specified.  
+  [Marcelo Fabri](https://github.com/marcelofabri)
+  [#5826](https://github.com/CocoaPods/CocoaPods/issues/5826)
+
+* Pass full path to App.xcworkspace for spec validation, and use `git -C` for `pod repo push` git ops.  
+  [Ben Asher](https://github.com/benasher44)
+  [#5805](https://github.com/CocoaPods/CocoaPods/issues/5805)
+
+
 ## 1.1.0.beta.2 (2016-09-03)
 
 ##### Enhancements
@@ -28,21 +51,30 @@ To install release candidates run `[sudo] gem install cocoapods --pre`
   [#5510](https://github.com/CocoaPods/CocoaPods/pull/5510)
 
 * Add support for building Messages applications.  
-  [benasher44](https://github.com/benasher44)
+  [Ben Asher](https://github.com/benasher44)
   [#5726](https://github.com/CocoaPods/CocoaPods/pull/5726)
 
 * Improved messaging when missing host targets for embedded targets.
   Improved support for framework-only projects.  
-  [benasher44](https://github.com/benasher44)
+  [Ben Asher](https://github.com/benasher44)
   [#5733](https://github.com/CocoaPods/CocoaPods/pull/5733)
 
 * Set ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES when appropriate.  
-  [benasher44](https://github.com/benasher44)
+  [Ben Asher](https://github.com/benasher44)
   [#5732](https://github.com/CocoaPods/CocoaPods/pull/5732)
 
 * Verify that embedded target platform and swift version matches the host.  
-  [benasher44](https://github.com/benasher44)
+  [Ben Asher](https://github.com/benasher44)
   [#5747](https://github.com/CocoaPods/CocoaPods/pull/5747)
+
+* Pass the version of CocoaPods to `pod lib create`'s configure script.  
+  [orta](https://github.com/orta)
+  [#5787](https://github.com/CocoaPods/CocoaPods/pull/5787)
+
+* Improve host target detection for embedded targets
+  in sub-projects.  
+  [Ben Asher](https://github.com/benasher44)
+  [#5622](https://github.com/CocoaPods/CocoaPods/issues/5622)
 
 ##### Bug Fixes
 
@@ -104,7 +136,7 @@ To install release candidates run `[sudo] gem install cocoapods --pre`
 
 * Improve handling of app extensions, watch os 1 extensions
   and framework targets.  
-  [benasher44](https://github.com/benasher44)
+  [Ben Asher](https://github.com/benasher44)
   [#4203](https://github.com/CocoaPods/CocoaPods/issues/4203)
 
 * Add a license type to generated acknowledgements file in plist.  
@@ -173,10 +205,7 @@ To install release candidates run `[sudo] gem install cocoapods --pre`
 
 ##### Enhancements
 
-* Improve host target detection for embedded targets
-  in sub-projects.  
-  [Ben Asher](https://github.com/benasher44)
-  [#5622](https://github.com/CocoaPods/CocoaPods/issues/5622)
+* None.
 
 ##### Bug Fixes
 

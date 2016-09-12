@@ -135,11 +135,23 @@ module Pod
           @validator.stubs(:add_app_project_import)
           @validator.stubs(:build_pod)
           @validator.stubs(:tear_down_validation_environment)
+          @validator.stubs(:perform_linting)
+          @validator.stubs(:validate_homepage)
+          @validator.stubs(:validate_screenshots)
+          @validator.stubs(:validate_social_media_url)
+          @validator.stubs(:validate_documentation_url)
+          @validator.stubs(:perform_extensive_subspec_analysis)
+          Specification.any_instance.stubs(:available_platforms).returns([])
+
           WebMock::API.stub_request(:head, /not-found/).to_return(:status => 404)
           WebMock::API.stub_request(:get, /not-found/).to_return(:status => 404)
         end
 
         describe 'Homepage validation' do
+          before do
+            @validator.unstub(:validate_homepage)
+          end
+
           it 'checks if the homepage is valid' do
             Specification.any_instance.stubs(:homepage).returns('http://banana-corp.local/not-found/')
             @validator.validate
@@ -203,7 +215,7 @@ module Pod
 
         describe 'Screenshot validation' do
           before do
-            @validator.stubs(:validate_homepage)
+            @validator.unstub(:validate_screenshots)
             WebMock::API.
               stub_request(:head, 'banana-corp.local/valid-image.png').
               to_return(
@@ -229,7 +241,7 @@ module Pod
 
         describe 'social media URL validation' do
           before do
-            @validator.stubs(:validate_homepage)
+            @validator.unstub(:validate_social_media_url)
           end
 
           it 'checks if the social media URL is valid' do
@@ -249,7 +261,7 @@ module Pod
 
         describe 'documentation URL validation' do
           before do
-            @validator.stubs(:validate_homepage)
+            @validator.unstub(:validate_documentation_url)
           end
 
           it 'checks if the documentation URL is valid' do
@@ -423,7 +435,7 @@ module Pod
         Executable.stubs(:capture_command).with('git', ['config', '--get', 'remote.origin.url'], :capture => :out).returns(['https://github.com/CocoaPods/Specs.git'])
         Executable.stubs(:which).with(:xcrun)
         Executable.expects(:which).with('xcodebuild').times(4).returns('/usr/bin/xcodebuild')
-        command = %w(clean build -workspace App.xcworkspace -scheme App -configuration Release)
+        command = ['clean', 'build', '-workspace', File.join(validator.validation_dir, 'App.xcworkspace'), '-scheme', 'App', '-configuration', 'Release']
         Executable.expects(:capture_command).with('xcodebuild', command, :capture => :merge).once.returns(['', stub(:success? => true)])
         args = %w(CODE_SIGN_IDENTITY=- -sdk appletvsimulator) + Fourflusher::SimControl.new.destination('Apple TV 1080p')
         Executable.expects(:capture_command).with('xcodebuild', command + args, :capture => :merge).once.returns(['', stub(:success? => true)])
@@ -772,12 +784,12 @@ module Pod
         validator = Validator.new(file, config.sources_manager.master.map(&:url))
         validator.stubs(:build_pod)
         validator.stubs(:validate_url)
-        validator.validate
         validator
       end
 
       it 'fails on deployment target < iOS 8 for Swift Pods' do
         validator = test_swiftpod
+        validator.validate
 
         validator.results.map(&:to_s).first.should.match /dynamic frameworks.*iOS > 8/
         validator.result_type.should == :error
@@ -787,6 +799,7 @@ module Pod
         Specification::Consumer.any_instance.stubs(:frameworks).returns(%w(XCTest))
 
         validator = test_swiftpod
+        validator.validate
         validator.results.count.should == 0
       end
 
@@ -794,8 +807,44 @@ module Pod
         Specification.any_instance.stubs(:deployment_target).returns('9.0')
 
         validator = test_swiftpod
+        validator.validate
 
         validator.results.count.should == 0
+      end
+
+      describe '#swift_version' do
+        it 'defaults to Swift 2.3' do
+          validator = test_swiftpod
+          validator.stubs(:dot_swift_version).returns(nil)
+          validator.swift_version.should == '2.3'
+        end
+
+        it 'checks for dot_swift_version' do
+          validator = test_swiftpod
+          validator.expects(:dot_swift_version)
+          validator.swift_version
+        end
+
+        it 'uses the result of dot_swift_version if not nil' do
+          validator = test_swiftpod
+          validator.stubs(:dot_swift_version).returns('1.0')
+          validator.swift_version.should == '1.0'
+        end
+      end
+
+      describe '#dot_swift_version' do
+        it 'looks for a .swift-version file' do
+          validator = test_swiftpod
+          Pathname.any_instance.expects(:exist?)
+          validator.dot_swift_version
+        end
+
+        it 'uses the .swift-version file if present' do
+          validator = test_swiftpod
+          Pathname.any_instance.stubs(:exist?).returns(true)
+          Pathname.any_instance.expects(:read).returns('1.0')
+          validator.dot_swift_version.should == '1.0'
+        end
       end
     end
     #-------------------------------------------------------------------------#
