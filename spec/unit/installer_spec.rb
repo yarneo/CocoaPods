@@ -260,23 +260,6 @@ module Pod
     #-------------------------------------------------------------------------#
 
     describe '#verify_no_duplicate_framework_and_library_names' do
-      it 'detects duplicate library names' do
-        Sandbox::FileAccessor.any_instance.stubs(:vendored_libraries).returns([Pathname('a/libBananalib.a')])
-        Pod::Specification.any_instance.stubs(:dependencies).returns([])
-        fixture_path = ROOT + 'spec/fixtures'
-        config.repos_dir = fixture_path + 'spec-repos'
-        podfile = Pod::Podfile.new do
-          platform :ios, '8.0'
-          project 'SampleProject/SampleProject'
-          pod 'BananaLib', :path => (fixture_path + 'banana-lib').to_s
-          target 'SampleProject'
-        end
-        lockfile = generate_lockfile
-
-        @installer = Installer.new(config.sandbox, podfile, lockfile)
-        @installer.installation_options.integrate_targets = false
-        should.raise(Informative) { @installer.install! }.message.should.match /conflict.*bananalib/
-      end
 
       it 'detects duplicate framework names' do
         Sandbox::FileAccessor.any_instance.stubs(:vendored_frameworks).

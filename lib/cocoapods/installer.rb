@@ -395,15 +395,16 @@ module Pod
       aggregate_targets.each do |aggregate_target|
         aggregate_target.user_build_configurations.keys.each do |config|
           pod_targets = aggregate_target.pod_targets_for_build_configuration(config)
-          file_accessors = pod_targets.flat_map(&:file_accessors)
-
-          frameworks = file_accessors.flat_map(&:vendored_frameworks).uniq.map(&:basename)
+          vendored_frameworks = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_frameworks).uniq
+          frameworks = vendored_frameworks.map { |fw| fw.basename('.framework') }
           frameworks += pod_targets.select { |pt| pt.should_build? && pt.requires_frameworks? }.map(&:product_module_name)
-          verify_no_duplicate_names(frameworks, aggregate_target.label, 'frameworks')
 
-          libraries = file_accessors.flat_map(&:vendored_libraries).uniq.map(&:basename)
-          libraries += pod_targets.select { |pt| pt.should_build? && !pt.requires_frameworks? }.map(&:product_name)
-          verify_no_duplicate_names(libraries, aggregate_target.label, 'libraries')
+          duplicates = frameworks.group_by { |f| f }.select { |_, v| v.size > 1 }.keys
+          unless duplicates.empty?
+              raise Informative, "The '#{aggregate_target.label}' target has " \
+                "frameworks with conflicting names: #{duplicates.to_sentence}."
+          end
+
         end
       end
     end
