@@ -109,7 +109,6 @@ module Pod
       prepare
       resolve_dependencies
       download_dependencies
-      verify_no_duplicate_framework_and_library_names
       verify_no_static_framework_transitive_dependencies
       verify_framework_usage
       generate_pods_project
@@ -400,10 +399,6 @@ module Pod
           frameworks += pod_targets.select { |pt| pt.should_build? && pt.requires_frameworks? }.map(&:product_module_name)
 
           duplicates = frameworks.group_by { |f| f }.select { |_, v| v.size > 1 }.keys
-          unless duplicates.empty?
-              raise Informative, "The '#{aggregate_target.label}' target has " \
-                "frameworks with conflicting names: #{duplicates.to_sentence}."
-          end
 
         end
       end
